@@ -1,0 +1,44 @@
+imports:
+- path: compute.jinja
+- path: network.jinja
+- path: subnetwork.jinja
+- path: firewall.jinja
+- path: bucket.jinja
+- path: sql.jinja
+
+resources:
+- name: vm1
+  type: compute.jinja
+  properties:
+    zone: europe-west1-a
+    diskSizeGb: "100"
+
+- name: vm2
+  type: compute.jinja
+  properties:
+    zone: europe-north1-a
+    diskSizeGb: "200"
+
+- name: company-storage-bucket
+  type: bucket.jinja
+
+- name: custom-network
+  type: network.jinja
+
+- name: custom-subnet
+  type: subnetwork.jinja
+  properties:
+    ipCidrRange: 10.10.0.0/16
+    network: $(ref.custom-network.selfLink)
+    region: us-central1
+
+- name: custom-firewall
+  type: firewall.jinja
+  properties:
+    network: $(ref.custom-network.selfLink)
+    IPProtocol: TCP
+    
+- name: sql
+  type: sql.jinja
+  properties:
+    tier: db-g1-small
