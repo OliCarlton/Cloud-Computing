@@ -6,4 +6,4 @@ resources:
     sourceRanges: ["0.0.0.0/0"]
     allowed:
     - IPProtocol: {{ properties["IPProtocol"] }}
-      ports: ["{{ properties["port"]}}"]
+      ports: {{ properties["port"] }}

@@ -6,12 +6,13 @@ imports:
 - path: networking/firewall.jinja
 - path: networking/network.jinja
 - path: networking/subnetwork.jinja
+- path: networking/vpn-gateway.jinja
 #Storage
-- path: storage/bucket.jinja
+#- path: storage/bucket.jinja
 #- path: storage/sql.jinja
 
 resources:
-- name: deploy-instance-group
+- name: ubuntu-2004-lts-1
   type: compute/managed-instance-group.jinja
   properties:
     image: projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts
@@ -19,9 +20,32 @@ resources:
     zone: europe-west4-a
     subnet: $(ref.custom-subnet-1.selfLink)
 
-- name: company-storage-bucket
-  type: storage/bucket.jinja
+- name: centos-8-1
+  type: compute/managed-instance-group.jinja
+  properties:
+    image: projects/centos-cloud/global/images/family/centos-8
+    region: europe-west4
+    zone: europe-west4-b
+    subnet: $(ref.custom-subnet-2.selfLink)
 
+- name: windows-sql-cloud-1
+  type: compute/managed-instance-group.jinja
+  properties:
+    image: projects/windows-sql-cloud/global/images/family/sql-web-2019-win-2019
+    region: europe-north1
+    zone: europe-north1-a
+    subnet: $(ref.custom-subnet-3.selfLink)
+
+- name: vpn
+  type: networking/vpn-gateway.jinja
+  properties:
+    region: europe-west4
+    network: $(ref.custom-network.selfLink)
+    peerIp: 1.2.3.4
+    sharedSecret: Foo
+    priority: 1000
+    destRange: 192.168.0.0
+    
 - name: custom-network
   type: networking/network.jinja
 
@@ -32,19 +56,32 @@ resources:
     network: $(ref.custom-network.selfLink)
     region: europe-west4
 
+- name: custom-subnet-2
+  type: networking/subnetwork.jinja
+  properties:
+    ipCidrRange: 10.120.0.0/24
+    network: $(ref.custom-network.selfLink)
+    region: europe-west4
+
+- name: custom-subnet-3
+  type: networking/subnetwork.jinja
+  properties:
+    ipCidrRange: 10.60.0.0/24
+    network: $(ref.custom-network.selfLink)
+    region: europe-north1
+
 - name: http-ssh
   type: networking/firewall.jinja
   properties:
     network: $(ref.custom-network.selfLink)
     IPProtocol: TCP
-    port: 80, 22
+    port: ["80", "22"]
 
-- name: custom-firewall-allow-ssh
-  type: networking/firewall.jinja
-  properties:
-    network: $(ref.custom-network.selfLink)
-    IPProtocol: TCP
-    port: 22
+#- type: gcp-types/compute-v1:vpnGateways
+#  name: gateway-{{ env["deployment"] }}
+#  properties:
+#    region: {{ properties["region"] }}
+#    network: $(ref.network-{{ env["deployment"] }}.selfLink)
 
 #- name: sql
 #  type: storage/sql.jinja
