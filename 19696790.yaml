@@ -1,44 +1,52 @@
 imports:
-- path: compute.jinja
-- path: network.jinja
-- path: subnetwork.jinja
-- path: firewall.jinja
-- path: bucket.jinja
-- path: sql.jinja
+#Compute
+- path: compute/managed-instance-group.jinja
+#Network
+#- path: networking/loadbalancer.jinja
+- path: networking/firewall.jinja
+- path: networking/network.jinja
+- path: networking/subnetwork.jinja
+#Storage
+- path: storage/bucket.jinja
+#- path: storage/sql.jinja
 
 resources:
-- name: vm1
-  type: compute.jinja
+- name: deploy-instance-group
+  type: compute/managed-instance-group.jinja
   properties:
-    zone: europe-west1-a
-    diskSizeGb: "100"
-
-- name: vm2
-  type: compute.jinja
-  properties:
-    zone: europe-north1-a
-    diskSizeGb: "200"
+    image: projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts
+    region: europe-west4
+    zone: europe-west4-a
+    subnet: $(ref.custom-subnet-1.selfLink)
 
 - name: company-storage-bucket
-  type: bucket.jinja
+  type: storage/bucket.jinja
 
 - name: custom-network
-  type: network.jinja
+  type: networking/network.jinja
 
-- name: custom-subnet
-  type: subnetwork.jinja
+- name: custom-subnet-1
+  type: networking/subnetwork.jinja
   properties:
-    ipCidrRange: 10.10.0.0/16
+    ipCidrRange: 10.240.0.0/24
     network: $(ref.custom-network.selfLink)
-    region: us-central1
+    region: europe-west4
 
-- name: custom-firewall
-  type: firewall.jinja
+- name: http-ssh
+  type: networking/firewall.jinja
   properties:
     network: $(ref.custom-network.selfLink)
     IPProtocol: TCP
-    
-- name: sql
-  type: sql.jinja
+    port: 80, 22
+
+- name: custom-firewall-allow-ssh
+  type: networking/firewall.jinja
   properties:
-    tier: db-g1-small
+    network: $(ref.custom-network.selfLink)
+    IPProtocol: TCP
+    port: 22
+
+#- name: sql
+#  type: storage/sql.jinja
+#  properties:
+#    tier: db-g1-small

@@ -1,0 +1,43 @@
+resources:
+- name: {{ env['name'] }}
+  type: compute.v1.instanceTemplate
+  properties:
+    properties:
+      zone: {{ properties["zone"] }}
+      machineType: e2-medium
+      disks: 
+      - deviceName: boot
+        type: PERSISTENT
+        boot: true
+        autoDelete: true 
+        initializeParams:
+          sourceImage: {{ properties['image'] }}
+      networkInterfaces:
+      - subnetwork: {{ properties["subnet"] }}
+        accessConfigs:
+        - name: External-IP
+          type: ONE_TO_ONE_NAT
+      metadata:
+        items:
+        - key: startup-script
+          value: |
+            #! /bin/bash
+            sudo apt-get update
+            sudo apt-get install -y apache2
+            sudo service apache2 start
+
+- name: managed-instance-group
+  type: compute.v1.instanceGroupManagers
+  properties:
+    baseInstanceName: mig
+    instanceTemplate: $(ref.{{ env['name'] }}.selfLink)
+    targetSize: 2
+    zone: {{ properties["zone"] }}
+
+- name: mig-autoscaler
+  type: compute.v1.autoscaler
+  properties:
+    zone: {{ properties["zone"] }}
+    target: $(ref.managed-instance-group.selfLink)
+    autoscalingPolicy:
+      maxNumReplicas: 4
