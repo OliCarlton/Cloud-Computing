@@ -1,0 +1,58 @@
+{% set VPN_GATEWAY = "vpn-gateway-" + env["deployment"] %}
+{% set VPN_TUNNEL = "vpn-tunnel-" + env["deployment"] %}
+{% set IP = "vpn-ip-" + env["deployment"] %}
+{% set NETWORK =  properties["network"] %}
+{% set ESP_RULE = "vpn-esp-rule-" + env["deployment"] %}
+
+resources:
+- name: {{ VPN_GATEWAY }}
+  type: compute.v1.targetVpnGateways
+  properties:
+    network: {{ NETWORK }}
+    region: {{ properties["region"] }}
+- name: {{ IP }}
+  type: compute.v1.addresses
+  properties:
+    region: {{ properties["region"] }}
+- name: {{ ESP_RULE }}
+  type: compute.v1.forwardingRules
+  properties:
+    IPProtocol: ESP
+    IPAddress: $(ref.{{ IP }}.address)
+    region: {{ properties["region"] }}
+    target: $(ref.{{ VPN_GATEWAY }}.selfLink)
+- name: vpn-udp500-rule-{{ env["deployment"] }}
+  type: compute.v1.forwardingRules
+  properties:
+    IPProtocol: UDP
+    IPAddress: $(ref.{{ IP }}.address)
+    portRange: 500
+    region: {{ properties["region"] }}
+    target: $(ref.{{ VPN_GATEWAY }}.selfLink)
+- name: vpn-udp4500-rule-{{ env["deployment"] }}
+  type: compute.v1.forwardingRules
+  properties:
+    IPProtocol: UDP
+    IPAddress: $(ref.{{ IP }}.address)
+    portRange: 4500
+    region: {{ properties["region"] }}
+    target: $(ref.{{ VPN_GATEWAY }}.selfLink)
+- name: {{ VPN_TUNNEL }}
+  type: compute.v1.vpnTunnels
+  properties:
+    region: {{ properties["region"] }}
+    ikeVersion: 2
+    sharedSecret: {{ properties["sharedSecret"] }}
+    peerIp: {{ properties["peerIp"] }}
+    targetVpnGateway: $(ref.{{ VPN_GATEWAY }}.selfLink)
+    description: Must be deployed after $(ref.{{ ESP_RULE }}.selfLink).
+    localTrafficSelector:
+    - 192.168.0.0/16
+- name: vpn-route-{{ env["deployment"] }}
+  type: compute.v1.routes
+  properties:
+    destRange: {{ properties["destRange"] }}
+    nextHopVpnTunnel: $(ref.{{ VPN_TUNNEL }}.selfLink)
+    network: {{ NETWORK }}
+    priority: {{ properties["priority"] }}
+    tags: []

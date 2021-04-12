@@ -7,6 +7,7 @@ imports:
 - path: networking/network.jinja
 - path: networking/subnetwork.jinja
 - path: networking/vpn-gateway.jinja
+- path: networking/vpn-tunnel.jinja
 #Storage
 #- path: storage/bucket.jinja
 #- path: storage/sql.jinja
@@ -36,8 +37,14 @@ resources:
     zone: europe-north1-a
     subnet: $(ref.custom-subnet-3.selfLink)
 
-- name: vpn
+- name: vpn-gateway
   type: networking/vpn-gateway.jinja
+  properties:
+    region: europe-west4
+    network: $(ref.custom-network.selfLink)
+
+- name: vpn
+  type: networking/vpn-tunnel.jinja
   properties:
     region: europe-west4
     network: $(ref.custom-network.selfLink)
@@ -76,12 +83,6 @@ resources:
     network: $(ref.custom-network.selfLink)
     IPProtocol: TCP
     port: ["80", "22"]
-
-#- type: gcp-types/compute-v1:vpnGateways
-#  name: gateway-{{ env["deployment"] }}
-#  properties:
-#    region: {{ properties["region"] }}
-#    network: $(ref.network-{{ env["deployment"] }}.selfLink)
 
 #- name: sql
 #  type: storage/sql.jinja
