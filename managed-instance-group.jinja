@@ -1,5 +1,8 @@
+{% set NAME = "vm-instance-template-" + env["name"] %}
+{% set MIG_NAME = "managed-instance-group-" + env["name"] %}
+
 resources:
-- name: vm-instance-template-{{ env["name"] }}
+- name: {{ NAME }}
   type: compute.v1.instanceTemplate
   properties:
     properties:
@@ -23,19 +26,18 @@ resources:
           value: |
             {{ properties["startup"]|indent(12) }}
 
-- name: managed-instance-group-{{ env["name"] }}
+- name: {{ MIG_NAME }}
   type: compute.v1.regionInstanceGroupManager
   properties:
     baseInstanceName: mig
-    instanceTemplate: $(ref.instance-group-{{ env['name'] }}.selfLink)
+    instanceTemplate: $(ref.{{ NAME }}.selfLink)
     targetSize: 1
     region: {{ properties["region"] }}
-
 
 - name: autoscaler-{{ env["name"] }}
   type: compute.v1.regionAutoscaler
   properties:
     region: {{ properties["region"] }}
-    target: $(ref.managed-instance-group-{{ env["name"] }}.selfLink)
+    target: $(ref.{{ MIG_NAME }}.selfLink)
     autoscalingPolicy:
       maxNumReplicas: 2
