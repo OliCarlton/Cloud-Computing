@@ -1,5 +1,5 @@
 resources:
-- name: instance-group-{{ env["name"] }}
+- name: vm-instance-template-{{ env["name"] }}
   type: compute.v1.instanceTemplate
   properties:
     properties:
@@ -21,23 +21,21 @@ resources:
         items:
         - key: startup-script
           value: |
-            #! /bin/bash
-            sudo apt-get update
-            sudo apt-get install -y apache2
-            sudo service apache2 start
+            {{ properties["startup"]|indent(12) }}
 
 - name: managed-instance-group-{{ env["name"] }}
-  type: compute.v1.instanceGroupManagers
+  type: compute.v1.regionInstanceGroupManager
   properties:
     baseInstanceName: mig
     instanceTemplate: $(ref.instance-group-{{ env['name'] }}.selfLink)
-    targetSize: 2
-    zone: {{ properties["zone"] }}
+    targetSize: 1
+    region: {{ properties["region"] }}
+
 
 - name: autoscaler-{{ env["name"] }}
-  type: compute.v1.autoscaler
+  type: compute.v1.regionAutoscaler
   properties:
-    zone: {{ properties["zone"] }}
+    region: {{ properties["region"] }}
     target: $(ref.managed-instance-group-{{ env["name"] }}.selfLink)
     autoscalingPolicy:
-      maxNumReplicas: 4 
+      maxNumReplicas: 2

@@ -42,8 +42,8 @@ resources:
   properties:
     region: {{ properties["region"] }}
     ikeVersion: 2
-    sharedSecret: {{ properties["sharedSecret"] }}
-    peerIp: {{ properties["peerIp"] }}
+    sharedSecret: {{ properties["secretPass"] }}
+    peerIp: {{ properties["peerIPv4"] }}
     targetVpnGateway: $(ref.{{ VPN_GATEWAY }}.selfLink)
     description: Must be deployed after $(ref.{{ ESP_RULE }}.selfLink).
     localTrafficSelector:

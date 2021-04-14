@@ -2,15 +2,13 @@ imports:
 #Compute
 - path: compute/managed-instance-group.jinja
 #Network
-#- path: networking/loadbalancer.jinja
 - path: networking/firewall.jinja
 - path: networking/network.jinja
 - path: networking/subnetwork.jinja
 - path: networking/vpn-gateway.jinja
 - path: networking/vpn-tunnel.jinja
 #Storage
-#- path: storage/bucket.jinja
-#- path: storage/sql.jinja
+- path: storage/bucket.jinja
 
 resources:
 - name: ubuntu-2004-lts-1
@@ -18,24 +16,32 @@ resources:
   properties:
     image: projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts
     region: europe-west4
-    zone: europe-west4-a
     subnet: $(ref.custom-subnet-1.selfLink)
+    startup: |
+      #! /bin/bash
+      sudo apt-get update
+      sudo apt-get install -y apache2
+      sudo service apache2 start"
 
-- name: centos-8-1
+- name: ubuntu-2004-lts-2
   type: compute/managed-instance-group.jinja
   properties:
-    image: projects/centos-cloud/global/images/family/centos-8
-    region: europe-west4
-    zone: europe-west4-b
+    image: projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts
+    region: europe-north1
     subnet: $(ref.custom-subnet-2.selfLink)
+    startup: |
+      #! /bin/bash
+      sudo apt-get update
+      sudo apt-get install -y apache2
+      sudo service apache2 start
 
 - name: windows-sql-cloud-1
   type: compute/managed-instance-group.jinja
   properties:
     image: projects/windows-sql-cloud/global/images/family/sql-web-2019-win-2019
     region: europe-north1
-    zone: europe-north1-a
-    subnet: $(ref.custom-subnet-3.selfLink)
+    subnet: $(ref.custom-subnet-2.selfLink)
+    startup: |
 
 - name: vpn-gateway
   type: networking/vpn-gateway.jinja
@@ -48,8 +54,8 @@ resources:
   properties:
     region: europe-west4
     network: $(ref.custom-network.selfLink)
-    peerIp: 1.2.3.4
-    sharedSecret: Foo
+    peerIPv4: 1.2.3.4
+    secretPass: Tvki5icmMW
     priority: 1000
     destRange: 192.168.0.0
     
@@ -68,13 +74,6 @@ resources:
   properties:
     ipCidrRange: 10.120.0.0/24
     network: $(ref.custom-network.selfLink)
-    region: europe-west4
-
-- name: custom-subnet-3
-  type: networking/subnetwork.jinja
-  properties:
-    ipCidrRange: 10.60.0.0/24
-    network: $(ref.custom-network.selfLink)
     region: europe-north1
 
 - name: http-ssh
@@ -83,8 +82,3 @@ resources:
     network: $(ref.custom-network.selfLink)
     IPProtocol: TCP
     port: ["80", "22"]
-
-#- name: sql
-#  type: storage/sql.jinja
-#  properties:
-#    tier: db-g1-small
