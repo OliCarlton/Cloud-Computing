@@ -1,0 +1,12 @@
+resources:
+{% for deployRegion in properties["regions"] %}
+{% set regionName = deployRegion["region"] %}
+- name: {{ env["deployment"] }}-service-{{ regionName }}
+  type: vm-service.jinja
+  properties:
+    currVersion: {{ deployRegion['curr'] }}
+    minSize: {{ properties['minSize'] }}
+    maxSize: {{ properties['maxSize'] }}
+    machineType: {{ properties['machineType'] }}
+    region: {{ regionName }}
+{% endfor %}

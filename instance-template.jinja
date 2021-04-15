@@ -1,0 +1,24 @@
+
+resources:
+- name: {{ env["name"] }}
+  type: compute.v1.instanceTemplate
+  properties:
+    properties:
+      machineType: {{ properties['machineType'] }}
+      disks: 
+      - deviceName: boot
+        type: PERSISTENT
+        boot: true
+        autoDelete: true
+        initializeParams:
+          sourceImage: {{ properties["image"] }}
+      networkInterfaces:
+      - subnetwork: {{ properties["subnet"] }}
+        accessConfigs:
+        - name: External-IP
+          type: ONE_TO_ONE_NAT
+      metadata:
+        items:
+        - key: startup-script
+          value: |
+            {{ properties['startup'] }}

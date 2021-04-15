@@ -1,0 +1,37 @@
+{% set NAME = env["name"] %}
+{% set REGION = properties["region"] %}
+{% set IGM_NAME = env["name"] + "-igm" %}
+{% set IT_NAME = env["name"] %}
+{% set CURR_IT_NAME = env["name"] + "-it-" + properties["currVersion"]["name"] %}
+
+resources:
+- name: {{ CURR_IT_NAME }}
+  type: instance-template.jinja
+  properties:
+    subnet: {{ properties["currVersion"]["subnet"] }}
+    startup: {{ properties["currVersion"]["startup"]|indent(12) }}
+    machineType: {{ properties["machineType"] }}
+    region: {{ REGION }}
+    itName: {{ CURR_IT_NAME }}
+    image: {{ properties["currVersion"]["image"] }}
+
+- name: {{ IGM_NAME }}
+  type: compute.v1.regionInstanceGroupManager
+  properties:
+    baseInstanceName: {{ IGM_NAME }}-instance
+    instanceTemplate: $(ref.{{ CURR_IT_NAME }}.selfLink)
+    region: {{ REGION }}
+    targetSize: 1
+    updatePolicy:
+      minimalAction: REPLACE
+      type: PROACTIVE
+
+- name: {{ NAME }}-as
+  type: compute.v1.regionAutoscaler
+  properties:
+    autoscalingPolicy:
+      minNumReplicas: {{ properties["minSize"] }}
+      maxNumReplicas: {{ properties["maxSize"] }}
+    target: $(ref.{{ IGM_NAME }}.selfLink)
+    region: {{ REGION }}
+    

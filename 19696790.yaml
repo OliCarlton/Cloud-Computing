@@ -1,6 +1,8 @@
 imports:
 #Compute
-- path: managed-instance-group.jinja
+- path: igm-service.jinja
+- path: vm-service.jinja
+- path: instance-template.jinja
 #Network
 - path: firewall.jinja
 - path: network.jinja
@@ -11,37 +13,33 @@ imports:
 - path: bucket.jinja
 
 resources:
-- name: ubuntu-2004-lts-1
-  type: managed-instance-group.jinja
+- name: igm-deployment
+  type: igm-service.jinja
   properties:
-    image: projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts
-    region: europe-west4
-    subnet: $(ref.custom-subnet-1.selfLink)
-    startup: |
-      #! /bin/bash
-      sudo apt-get update
-      sudo apt-get install -y apache2
-      sudo service apache2 start"
-
-- name: ubuntu-2004-lts-2
-  type: managed-instance-group.jinja
-  properties:
-    image: projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts
-    region: europe-north1
-    subnet: $(ref.custom-subnet-2.selfLink)
-    startup: |
-      #! /bin/bash
-      sudo apt-get update
-      sudo apt-get install -y apache2
-      sudo service apache2 start
-
-- name: windows-sql-cloud-1
-  type: managed-instance-group.jinja
-  properties:
-    image: projects/windows-sql-cloud/global/images/family/sql-web-2019-win-2019
-    region: europe-north1
-    subnet: $(ref.custom-subnet-2.selfLink)
-    startup: |
+    minSize: 1
+    maxSize: 2
+    machineType: e2-medium
+    regions:
+    - region: europe-west4
+      curr:
+        name: ubuntu-2004-lts-1
+        image: projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts
+        subnet: $(ref.custom-subnet-1.selfLink)
+        startup: |
+          #! /bin/bash
+          sudo apt-get update
+          sudo apt-get install -y apache2
+          sudo service apache2 start
+    - region: europe-north1
+      curr:
+        name: ubuntu-2004-lts-2
+        image: projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts
+        subnet: $(ref.custom-subnet-2.selfLink)
+        startup: |
+          #! /bin/bash
+          sudo apt-get update
+          sudo apt-get install -y apache2
+          sudo service apache2 start
 
 - name: vpn-gateway
   type: vpn-gateway.jinja
