@@ -1,0 +1,42 @@
+info:
+  title: Instance Group Manager Creation
+  author: Oliver with references from Google, inc https://github.com/GoogleCloudPlatform/deploymentmanager-samples/blob/master/examples/v2/igm-updater/jinja/ha-service.jinja.schema
+  description: Creates a group of managed VMs with selected specifications
+  version: 1.0
+
+imports:
+- path: vm-service.jinja
+- path: instance-template.jinja
+
+properties:
+  regions:
+    type: array
+    description: An array of regions which indicates the regions in which the instances are to be deployed
+    items:
+      type: object
+      required:
+      - region
+      - curr
+      properties:
+        region:
+          type: string
+          description: The region of the specific instance group for multi-zone deployment
+        curr:
+          type: object
+          description: A region object which contains a name, image, subnet, disk size and startup script
+          properties:
+            name:
+              type: string
+              description: Identifies the VM group
+            image:
+              type: string
+              description: URL to the operating system for the device. 
+            subnet:
+              type: string
+              description: URL or reference to the subnet to be used
+            diskSizeGb:
+              type: integer
+              description: Size of the boot disk in GB
+            startup:
+              type: string
+              description: A startup script for a VM to run on boot

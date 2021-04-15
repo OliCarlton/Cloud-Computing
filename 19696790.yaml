@@ -6,7 +6,6 @@ imports:
 #Network
 - path: firewall.jinja
 - path: network-service.jinja
-- path: subnet-service.jinja
 - path: vpn-gateway.jinja
 - path: vpn-tunnel.jinja
 #Storage
@@ -23,7 +22,7 @@ resources:
     regions:
     - region: europe-west4
       curr:
-        name: ubuntu-2004-lts-1
+        name: ubuntu-lts-1
         image: projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts
         subnet: $(ref.custom-subnet-1.selfLink)
         diskSizeGb: 200
@@ -34,7 +33,7 @@ resources:
           sudo service apache2 start
     - region: europe-north1
       curr:
-        name: ubuntu-2004-lts-2
+        name: ubuntu-lts-2
         image: projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts
         subnet: $(ref.custom-subnet-2.selfLink)
         diskSizeGb: 200
@@ -82,9 +81,11 @@ resources:
     region: europe-west4
     network: $(ref.custom-network.selfLink)
 
-- name: sqlserver
+- name: sql-database
   type: sql.jinja
   properties:
-    tier: db-n1-standard-2 
-    charset: utf8
-
+    tier: db-n1-standard-1
+    region: europe-west2
+    readReplicas: 1
+    failOver: true
+    replicationType: SYNCHRONOUS

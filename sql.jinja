@@ -1,31 +1,63 @@
-{% set DB_NAME = env["project_number"]+"db" %}
-{% set INSTANCE_NAME = "dbinstance102" %}
-{% set CERTIFICATE= env["deployment"]+"-sslcert" %}
+{% set deployment_name = env["deployment"]  %}
+{% set instance_name = deployment_name + '-instance'  %}
+{% set replica_name = deployment_name + '-replica'  %}
+{% set failover_name = deployment_name + '-failover'  %}
+{% set database_name = deployment_name + 'db'  %}
 
 resources:
-- name: {{ INSTANCE_NAME }}
-  type: sqladmin.v1beta4.instance
+- name: {{ instance_name }}
+  type: gcp-types/sqladmin-v1beta4:instances
   properties:
+    region: {{ properties['region'] }}  
     settings:
-      tier: {{ properties["tier"] }}
+      tier: {{ properties['tier'] }}
+      backupConfiguration:
+        binaryLogEnabled: true
+        enabled: true
 
-- name: {{ DB_NAME }}
-  type: sqladmin.v1beta4.database
+- name: {{ database_name }}
+  type: gcp-types/sqladmin-v1beta4:databases
   properties:
-    name: {{ DB_NAME }}
-    instance: {{ INSTANCE_NAME }}
-  {% if properties['charset'] == 'utf8' %}
+    name: {{ database_name }}
+    instance: $(ref.{{ instance_name }}.name)
     charset: utf8
-    collation: utf8_general_ci
-  {% else %}
-    charset: latin1
-    collation: latin1_swedish_ci
-  {% endif %}
+{% set dependency = 'database_name' %}
 
-- name: {{ CERTIFICATE }}
-  type: sqladmin.v1beta4.sslCert
+{% for n in range(properties['readReplicas']) %}
+- name: {{ replica_name }}-{{n}}
+  type: gcp-types/sqladmin-v1beta4:instances
   metadata:
     dependsOn:
-    - {{ DB_NAME }}
+    {% if n == 0 %}
+    - {{ database_name }}
+    {% else %}
+    - {{ replica_name + '-' + (n-1)|string }}
+    {% endif %}
   properties:
-    instance: $(ref.{{ INSTANCE_NAME }}.name)
+    region: {{ properties['region'] }}  
+    masterInstanceName: $(ref.{{ instance_name }}.name)
+    settings:
+      tier: {{ properties['tier'] }}
+      replicationType: {{ properties['replicationType'] }}
+{% endfor %}
+
+{% if properties['failOver']  %}
+- name: {{ failover_name }}
+  type: gcp-types/sqladmin-v1beta4:instances
+  metadata:
+    dependsOn:
+    {% if properties['readReplicas'] > 0 %}
+    - {{ replica_name + '-' + (properties['readReplicas']-1)|string }}
+    {% else %}
+    - delete-user-root
+    {% endif %}
+  properties:
+    replicaConfiguration:
+      failoverTarget: true
+    region: {{ properties['region'] }}
+    masterInstanceName: $(ref.{{ instance_name }}.name)
+    settings:
+      tier: {{ properties['tier'] }}
+      replicationType: {{ properties['replicationType'] }}
+{% set dependency = failover_name %}
+{% endif %}

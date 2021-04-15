@@ -1,0 +1,32 @@
+info:
+  title: Network Service
+  author: Oliver with references from Google, inc https://github.com/GoogleCloudPlatform/deploymentmanager-samples/blob/master/examples/v2/igm-updater/jinja/ha-service.jinja.schema
+  description: Creates a network with subnets
+  version: 1.0
+
+properties:
+  regions:
+    type: array
+    description: An array of regions which indicates the regions in which the instances are to be deployed
+    items:
+      type: object
+      required:
+      - region
+      - curr
+      properties:
+        zone:
+          type: string
+          description: The region of the subnet to be deployed
+        curr:
+          type: object
+          description: A region object which contains a name, network reference and ipCidrRange
+          properties:
+            name:
+              type: string
+              description: Identifies the subnet
+            network:
+              type: string
+              description: URL to the network the subnet is to be a part of
+            ipCidrRange:
+              type: string
+              description: Range of interal ip addresses to be used by the subnet, must be unique and cannot overlap
