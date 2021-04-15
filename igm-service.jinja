@@ -4,9 +4,9 @@ resources:
 - name: {{ env["deployment"] }}-service-{{ regionName }}
   type: vm-service.jinja
   properties:
-    currVersion: {{ deployRegion['curr'] }}
-    minSize: {{ properties['minSize'] }}
-    maxSize: {{ properties['maxSize'] }}
-    machineType: {{ properties['machineType'] }}
+    currVersion: {{ deployRegion["curr"] }}
+    minSize: {{ properties["minSize"] }}
+    maxSize: {{ properties["maxSize"] }}
+    machineType: {{ properties["machineType"] }}
     region: {{ regionName }}
 {% endfor %}

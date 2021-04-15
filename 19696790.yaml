@@ -3,10 +3,10 @@ imports:
 - path: igm-service.jinja
 - path: vm-service.jinja
 - path: instance-template.jinja
-#Network re
+#Network
 - path: firewall.jinja
-- path: network.jinja
-- path: subnetwork.jinja
+- path: network-service.jinja
+- path: subnet-service.jinja
 - path: vpn-gateway.jinja
 - path: vpn-tunnel.jinja
 #Storage
@@ -34,18 +34,34 @@ resources:
       curr:
         name: ubuntu-2004-lts-2
         image: projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts
-        subnet: $(ref.custom-subnet-2.selfLink)
+        subnet: $(ref.{{ env["deployment"] }}-service-custom-subnet-2.selfLink)
         startup: |
           #! /bin/bash
           sudo apt-get update
           sudo apt-get install -y apache2
           sudo service apache2 start
-
-- name: vpn-gateway
-  type: vpn-gateway.jinja
+    
+- name: custom-network
+  type: network-service.jinja
   properties:
-    region: europe-west4
+    regions:
+      - region: europe-west4
+        curr:
+          name: custom-subnet-1
+          ipCidrRange: 10.10.0.0/24
+          network: $(ref.custom-network.selfLink)
+      - region: europe-north1
+        curr:
+          name: custom-subnet-2
+          ipCidrRange: 10.20.0.0/24
+          network: $(ref.custom-network.selfLink)
+
+- name: http-ssh
+  type: firewall.jinja
+  properties:
     network: $(ref.custom-network.selfLink)
+    IPProtocol: TCP
+    port: ["80", "22"]
 
 - name: vpn
   type: vpn-tunnel.jinja
@@ -56,27 +72,9 @@ resources:
     secretPass: Tvki5icmMW
     priority: 1000
     destRange: 192.168.0.0
-    
-- name: custom-network
-  type: network.jinja
 
-- name: custom-subnet-1
-  type: subnetwork.jinja
+- name: vpn-gateway
+  type: vpn-gateway.jinja
   properties:
-    ipCidrRange: 10.10.0.0/24
-    network: $(ref.custom-network.selfLink)
     region: europe-west4
-
-- name: custom-subnet-2
-  type: subnetwork.jinja
-  properties:
-    ipCidrRange: 10.20.0.0/24
     network: $(ref.custom-network.selfLink)
-    region: europe-north1
-
-- name: http-ssh
-  type: firewall.jinja
-  properties:
-    network: $(ref.custom-network.selfLink)
-    IPProtocol: TCP
-    port: ["80", "22"]

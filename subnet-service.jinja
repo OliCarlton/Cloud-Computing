@@ -1,0 +1,9 @@
+resources:
+- name: {{ env["name"] }}-st-{{ properties["currVersion"]["name"] }}
+  type: compute.v1.subnetwork
+  properties:
+    ipCidrRange: {{ properties["currVersion"]["ipCidrRange"] }}
+    network: {{ properties["currVersion"]["network"] }}
+    region: {{ properties["region"] }}
+
+    

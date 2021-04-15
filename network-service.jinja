@@ -1,0 +1,19 @@
+{% set NET_NAME = env["name"] %}
+
+resources:
+- name: {{ NET_NAME }}
+  type: compute.v1.network
+  properties:
+    autoCreateSubnetworks: false
+    routingConfig:
+      routingMode: REGIONAL
+
+{% for deployRegion in properties["regions"] %}
+{% set regionName = deployRegion["region"] %}
+- name: {{ deployRegion["curr"]["name"] }}
+  type: compute.v1.subnetwork
+  properties:
+    region: {{ regionName }}
+    network: $(ref.{{ NET_NAME }}.selfLink)
+    ipCidrRange: {{ deployRegion["curr"]["ipCidrRange"] }}
+{% endfor %}
