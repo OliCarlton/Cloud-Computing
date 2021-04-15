@@ -1,18 +1,19 @@
 imports:
-#Compute
+# Compute related resources
 - path: igm-service.jinja
 - path: vm-service.jinja
 - path: instance-template.jinja
-#Network
+# Network related resources
 - path: firewall.jinja
 - path: network-service.jinja
 - path: vpn-gateway.jinja
 - path: vpn-tunnel.jinja
-#Storage
+# Storage related resources
 - path: bucket.jinja
-- path: sql.jinja
+- path: sql-service.jinja
 
 resources:
+#Create VM instance groups with auto-scaling
 - name: igm-deployment
   type: igm-service.jinja
   properties:
@@ -42,7 +43,8 @@ resources:
           sudo apt-get update
           sudo apt-get install -y apache2
           sudo service apache2 start
-    
+
+# Create a custom network with Subnets
 - name: custom-network
   type: network-service.jinja
   properties:
@@ -58,13 +60,15 @@ resources:
           ipCidrRange: 10.20.0.0/24
           network: $(ref.custom-network.selfLink)
 
-- name: http-ssh
+# Allow HTTP, SSH and RDP traffic on the network
+- name: http-ssh-rdp
   type: firewall.jinja
   properties:
     network: $(ref.custom-network.selfLink)
     IPProtocol: TCP
-    port: ["80", "22"]
+    port: ["80", "22", "3389"]
 
+# Create a VPN tunnel
 - name: vpn
   type: vpn-tunnel.jinja
   properties:
@@ -75,14 +79,16 @@ resources:
     priority: 1000
     destRange: 192.168.0.0
 
+# Create a Gateway
 - name: vpn-gateway
   type: vpn-gateway.jinja
   properties:
     region: europe-west4
     network: $(ref.custom-network.selfLink)
 
-- name: sql-database
-  type: sql.jinja
+# Create and manage database
+- name: database-instance
+  type: sql-service.jinja
   properties:
     tier: db-n1-standard-1
     region: europe-west2

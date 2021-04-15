@@ -1,21 +1,25 @@
 {% set NAME = env["deployment"] +"-bucket" %}
 
 resources:
-- name: {{ BUCKETNAME }}
+- name: {{ NAME }}
   type: storage.v1.bucket
   properties:
     predefinedAcl: projectPrivate
     projection: full
-    location: US
+    {# Multi region for extra redundancy #}
+    location: EU
     storageClass: STANDARD
+
+{# Add security and access levels to the bucket #}
 - type: storage.v1.bucketAccessControl
-  name: test-bucket-acl
+  name: bucketAccessSecurity
   properties:
-    bucket: $(ref.{{ BUCKETNAME }}.name)
-    domain: www.google.com
-    email: scoobydoo@google.com
-    entity: project-editors-657686986194
+    {# Access levels #}
+    bucket: $(ref.{{ NAME }}.name)
+    domain: www.lincoln.ac.uk
+    email: 19696790@students.lincoln.ac.uk
+    entity: project-editors-{{ env["project"] }}
     projectTeam:
-      projectNumber: 657686986194
+      projectNumber: {{ env["project"] }}
       team: editors
     role: OWNER

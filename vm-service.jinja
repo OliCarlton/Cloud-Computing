@@ -1,3 +1,4 @@
+{# Definining pre-determined variables #}
 {% set NAME = env["name"] %}
 {% set REGION = properties["region"] %}
 {% set IGM_NAME = env["name"] + "-igm" %}
@@ -8,6 +9,7 @@ resources:
 - name: {{ CURR_IT_NAME }}
   type: instance-template.jinja
   properties:
+    {# Passing data through into the instance template for VM creation #}
     subnet: {{ properties["currVersion"]["subnet"] }}
     startup: {{ properties["currVersion"]["startup"]|indent(12) }}
     machineType: {{ properties["machineType"] }}
@@ -17,6 +19,7 @@ resources:
     image: {{ properties["currVersion"]["image"] }}
 
 - name: {{ IGM_NAME }}
+  {# Adapted from regular instance group manager, offers more redundancy #}
   type: compute.v1.regionInstanceGroupManager
   properties:
     baseInstanceName: {{ IGM_NAME }}-instance
@@ -24,13 +27,17 @@ resources:
     region: {{ REGION }}
     targetSize: 1
     updatePolicy:
+      {# Proactive updates #}
       minimalAction: REPLACE
       type: PROACTIVE
 
 - name: {{ NAME }}-as
+  {# Adapted from regular autoscaler, offers more redundancy and
+  compatibility with regionInstanceGroupManager#}
   type: compute.v1.regionAutoscaler
   properties:
     autoscalingPolicy:
+      {# Minimum and maximum replica instance VMs at a given time #}
       minNumReplicas: {{ properties["minSize"] }}
       maxNumReplicas: {{ properties["maxSize"] }}
     target: $(ref.{{ IGM_NAME }}.selfLink)

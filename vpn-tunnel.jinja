@@ -1,3 +1,4 @@
+{# Pre-defined variables #}
 {% set VPN_GATEWAY = "vpn-gateway-" + env["deployment"] %}
 {% set VPN_TUNNEL = "vpn-tunnel-" + env["deployment"] %}
 {% set IP = "vpn-ip-" + env["deployment"] %}
@@ -5,14 +6,17 @@
 
 resources:
 - name: {{ VPN_GATEWAY }}
+  {# Create a new gateway #}
   type: compute.v1.targetVpnGateways
   properties:
     network: {{ properties["network"] }}
     region: {{ properties["region"] }}
 - name: {{ IP }}
+  {# Assign IP #}}
   type: compute.v1.addresses
   properties:
     region: {{ properties["region"] }}
+  {# Forwarding rules to allow traffic to flow privately #}
 - name: {{ ESP_RULE }}
   type: compute.v1.forwardingRules
   properties:
@@ -38,6 +42,7 @@ resources:
     target: $(ref.{{ VPN_GATEWAY }}.selfLink)
 - name: {{ VPN_TUNNEL }}
   type: compute.v1.vpnTunnels
+  {# Create the tunnel, secrets required #}
   properties:
     region: {{ properties["region"] }}
     ikeVersion: 2
@@ -48,6 +53,7 @@ resources:
     localTrafficSelector:
     - 192.168.0.0/16
 - name: vpn-route-{{ env["deployment"] }}
+  {# Creating a route between networks #}
   type: compute.v1.routes
   properties:
     destRange: {{ properties["destRange"] }}

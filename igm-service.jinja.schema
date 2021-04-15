@@ -1,12 +1,13 @@
 info:
   title: Instance Group Manager Creation
   author: Oliver with references from Google, inc https://github.com/GoogleCloudPlatform/deploymentmanager-samples/blob/master/examples/v2/igm-updater/jinja/ha-service.jinja.schema
-  description: Creates a group of managed VMs with selected specifications
+  description: Creates a group of managed autoscaled VMs with selected specifications
   version: 1.0
 
 imports:
 - path: vm-service.jinja
 - path: instance-template.jinja
+- path: igm-service.jinja
 
 properties:
   regions:

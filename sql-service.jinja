@@ -1,0 +1,74 @@
+{# With reference from: Google, inc 
+sqladmin.jinja (2020)
+https://github.com/GoogleCloudPlatform/deploymentmanager-samples/tree/master/examples/v2/sqladmin/jinja #}
+
+{# Define variables #}
+{% set DEPLOYMENT = env["deployment"]  %}
+{% set INSTANCE = DEPLOYMENT + 'instance'  %}
+{% set REPLICA = DEPLOYMENT + 'replica'  %}
+{% set FAILOVER = DEPLOYMENT + 'failover'  %}
+{% set DATABASE = DEPLOYMENT + 'db'  %}
+
+resources:
+{# Create an SQL Instance to run a DB #}
+- name: {{ INSTANCE }}
+  type: gcp-types/sqladmin-v1beta4:instances
+  properties:
+    region: {{ properties['region'] }}  
+    settings:
+      tier: {{ properties['tier'] }}
+      backupConfiguration:
+        binaryLogEnabled: true
+        enabled: true
+
+{# Create the database to be 'attatched' to the DB instance #}
+- name: {{ DATABASE }}
+  type: gcp-types/sqladmin-v1beta4:databases
+  properties:
+    name: {{ DATABASE }}
+    instance: $(ref.{{ INSTANCE }}.name)
+    charset: utf8
+{% set dependency = 'DATABASE' %}
+
+{# Looping for how many replicas specified #}
+{% for n in range(properties['readReplicas']) %}
+- name: {{ REPLICA }}-{{n}}
+  type: gcp-types/sqladmin-v1beta4:instances
+  metadata:
+    {# Dependency changes depending on how many replicas #}
+    dependsOn:
+    {% if n == 0 %}
+    - {{ DATABASE }}
+    {% else %}
+    - {{ REPLICA + '-' + (n-1)|string }}
+    {% endif %}
+  properties:
+    region: {{ properties['region'] }}  
+    masterInstanceName: $(ref.{{ INSTANCE }}.name)
+    settings:
+      tier: {{ properties['tier'] }}
+      replicationType: {{ properties['replicationType'] }}
+{% endfor %}
+
+{# If there's a failover, the replicated disk will be moved to a new instance
+to serve as the main instance #}
+{% if properties['failOver']  %}
+- name: {{ FAILOVER }}
+  type: gcp-types/sqladmin-v1beta4:instances
+  metadata:
+    dependsOn:
+    {% if properties['readReplicas'] > 0 %}
+    - {{ REPLICA + '-' + (properties['readReplicas']-1)|string }}
+    {% else %}
+    - delete-user-root
+    {% endif %}
+  properties:
+    replicaConfiguration:
+      failoverTarget: true
+    region: {{ properties['region'] }}
+    masterInstanceName: $(ref.{{ INSTANCE }}.name)
+    settings:
+      tier: {{ properties['tier'] }}
+      replicationType: {{ properties['replicationType'] }}
+{% set dependency = FAILOVER %}
+{% endif %}

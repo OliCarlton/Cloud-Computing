@@ -1,16 +1,22 @@
+{# Predefined variable #}
 {% set NET_NAME = env["name"] %}
 
 resources:
 - name: {{ NET_NAME }}
   type: compute.v1.network
   properties:
+    {# Subnets are created below #}
     autoCreateSubnetworks: false
     routingConfig:
+      {# Configured to operate regionally #}
       routingMode: REGIONAL
 
+{# Loop to go through each new subnet in
+the yaml configuration file.#}
 {% for deployRegion in properties["regions"] %}
 {% set regionName = deployRegion["region"] %}
 - name: {{ deployRegion["curr"]["name"] }}
+  {# Creates the subnets #}
   type: compute.v1.subnetwork
   properties:
     region: {{ regionName }}

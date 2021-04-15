@@ -3,8 +3,10 @@ resources:
   type: compute.v1.instanceTemplate
   properties:
     properties:
+      {# Defines the machine type the vm will use #}
       machineType: {{ properties['machineType'] }}
       disks: 
+      {# Boot disk specifications #}
       - deviceName: boot
         type: PERSISTENT
         boot: true
@@ -13,12 +15,14 @@ resources:
         initializeParams:
           sourceImage: {{ properties["image"] }}
       networkInterfaces:
+      {# Connect the VMs to a subnet in the VPC #}
       - subnetwork: {{ properties["subnet"] }}
         accessConfigs:
         - name: External-IP
           type: ONE_TO_ONE_NAT
       metadata:
         items:
+        {# Start up script to run for when the VM boots #}
         - key: startup-script
           value: |
             {{ properties['startup'] }}

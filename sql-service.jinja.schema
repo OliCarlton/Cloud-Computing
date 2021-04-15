@@ -1,0 +1,30 @@
+info:
+  title: Instance Group Manager Creation
+  author: Oliver with references from Google, inc https://github.com/GoogleCloudPlatform/deploymentmanager-samples/tree/master/examples/v2/sqladmin/jinja
+  description: Creates an SQL instance and Database with Redundancy backups
+
+imports:
+- path: sql-service.jinja
+
+properties:
+    tier:
+        type: string
+        description: Choose the type of database instance
+    
+    region:
+        type: string
+        description: Choose the region for the database to be deployed
+    
+    readReplicas:
+        type: integer
+        description: The amount of replica instances to make for redundancy and availiability
+    
+    failOver:
+        type: boolean
+        default: True
+        description: Define wether failover or not
+    
+    replicationType:
+        type: string
+        default: SYNCHRONOUS
+        description: Define the way the instances are replicated

@@ -4,6 +4,9 @@ info:
   description: Creates a network with subnets
   version: 1.0
 
+imports:
+- path: network-service.jinja
+
 properties:
   regions:
     type: array

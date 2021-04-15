@@ -1,5 +1,6 @@
 resources:
 - type: compute.v1.vpnGateways
+  {# Create a gateway #}
   name: gateway-{{ env["deployment"] }}
   properties:
     region: {{ properties["region"] }}

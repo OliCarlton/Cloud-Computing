@@ -1,9 +1,16 @@
+{# The auto-scaling, instance group managing referenced and adapted from: 
+https://github.com/GoogleCloudPlatform/deploymentmanager-samples/tree/master/examples/v2/igm-updater/jinja 
+Google, inc (2020) #}
+
 resources:
+{# Loop through the region properties to seperate
+instances into groups as specified in the yaml file#}
 {% for deployRegion in properties["regions"] %}
 {% set regionName = deployRegion["region"] %}
 - name: {{ env["deployment"] }}-service-{{ regionName }}
   type: vm-service.jinja
   properties:
+    {# Pass through properties from the yaml #}
     currVersion: {{ deployRegion["curr"] }}
     minSize: {{ properties["minSize"] }}
     maxSize: {{ properties["maxSize"] }}
