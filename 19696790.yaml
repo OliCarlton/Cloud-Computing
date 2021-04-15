@@ -25,6 +25,7 @@ resources:
         name: ubuntu-2004-lts-1
         image: projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts
         subnet: $(ref.custom-subnet-1.selfLink)
+        diskSizeGb: 200
         startup: |
           #! /bin/bash
           sudo apt-get update
@@ -34,7 +35,8 @@ resources:
       curr:
         name: ubuntu-2004-lts-2
         image: projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts
-        subnet: $(ref.{{ env["deployment"] }}-service-custom-subnet-2.selfLink)
+        subnet: $(ref.custom-subnet-2.selfLink)
+        diskSizeGb: 200
         startup: |
           #! /bin/bash
           sudo apt-get update

@@ -11,6 +11,7 @@ resources:
     subnet: {{ properties["currVersion"]["subnet"] }}
     startup: {{ properties["currVersion"]["startup"]|indent(12) }}
     machineType: {{ properties["machineType"] }}
+    diskSizeGb: {{ properties["currVersion"]["diskSizeGb"] }}
     region: {{ REGION }}
     itName: {{ CURR_IT_NAME }}
     image: {{ properties["currVersion"]["image"] }}

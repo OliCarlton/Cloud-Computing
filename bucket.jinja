@@ -1,6 +1,21 @@
+{% set NAME = env["deployment"] +"-bucket" %}
+
 resources:
-- name: {{ env['name'] }}
+- name: {{ BUCKETNAME }}
   type: storage.v1.bucket
   properties:
-    location: EU
+    predefinedAcl: projectPrivate
+    projection: full
+    location: US
     storageClass: STANDARD
+- type: storage.v1.bucketAccessControl
+  name: test-bucket-acl
+  properties:
+    bucket: $(ref.{{ BUCKETNAME }}.name)
+    domain: www.google.com
+    email: scoobydoo@google.com
+    entity: project-editors-657686986194
+    projectTeam:
+      projectNumber: 657686986194
+      team: editors
+    role: OWNER

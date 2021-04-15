@@ -1,3 +1,4 @@
+{% set STORAGE_DISK = env["name"] + "-storage" %}
 
 resources:
 - name: {{ env["name"] }}
@@ -10,6 +11,7 @@ resources:
         type: PERSISTENT
         boot: true
         autoDelete: true
+        diskSizeGb: {{ properties["diskSizeGb"] }}
         initializeParams:
           sourceImage: {{ properties["image"] }}
       networkInterfaces:
