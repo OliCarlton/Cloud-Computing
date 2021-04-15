@@ -11,6 +11,7 @@ imports:
 - path: vpn-tunnel.jinja
 #Storage
 - path: bucket.jinja
+- path: sql.jinja
 
 resources:
 - name: igm-deployment
@@ -80,3 +81,10 @@ resources:
   properties:
     region: europe-west4
     network: $(ref.custom-network.selfLink)
+
+- name: sqlserver
+  type: sql.jinja
+  properties:
+    tier: db-n1-standard-2 
+    charset: utf8
+

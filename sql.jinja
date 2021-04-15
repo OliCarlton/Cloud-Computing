@@ -1,6 +1,31 @@
+{% set DB_NAME = env["project_number"]+"db" %}
+{% set INSTANCE_NAME = "dbinstance102" %}
+{% set CERTIFICATE= env["deployment"]+"-sslcert" %}
+
 resources:
-- name: sql
+- name: {{ INSTANCE_NAME }}
   type: sqladmin.v1beta4.instance
   properties:
     settings:
-      tier: {{ properties['tier'] }}
+      tier: {{ properties["tier"] }}
+
+- name: {{ DB_NAME }}
+  type: sqladmin.v1beta4.database
+  properties:
+    name: {{ DB_NAME }}
+    instance: {{ INSTANCE_NAME }}
+  {% if properties['charset'] == 'utf8' %}
+    charset: utf8
+    collation: utf8_general_ci
+  {% else %}
+    charset: latin1
+    collation: latin1_swedish_ci
+  {% endif %}
+
+- name: {{ CERTIFICATE }}
+  type: sqladmin.v1beta4.sslCert
+  metadata:
+    dependsOn:
+    - {{ DB_NAME }}
+  properties:
+    instance: $(ref.{{ INSTANCE_NAME }}.name)
