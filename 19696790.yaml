@@ -3,7 +3,7 @@ imports:
 - path: igm-service.jinja
 - path: vm-service.jinja
 - path: instance-template.jinja
-#Network
+#Network re
 - path: firewall.jinja
 - path: network.jinja
 - path: subnetwork.jinja
@@ -63,14 +63,14 @@ resources:
 - name: custom-subnet-1
   type: subnetwork.jinja
   properties:
-    ipCidrRange: 10.240.0.0/24
+    ipCidrRange: 10.10.0.0/24
     network: $(ref.custom-network.selfLink)
     region: europe-west4
 
 - name: custom-subnet-2
   type: subnetwork.jinja
   properties:
-    ipCidrRange: 10.120.0.0/24
+    ipCidrRange: 10.20.0.0/24
     network: $(ref.custom-network.selfLink)
     region: europe-north1
 

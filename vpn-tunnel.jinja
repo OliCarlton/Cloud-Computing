@@ -1,14 +1,13 @@
 {% set VPN_GATEWAY = "vpn-gateway-" + env["deployment"] %}
 {% set VPN_TUNNEL = "vpn-tunnel-" + env["deployment"] %}
 {% set IP = "vpn-ip-" + env["deployment"] %}
-{% set NETWORK =  properties["network"] %}
 {% set ESP_RULE = "vpn-esp-rule-" + env["deployment"] %}
 
 resources:
 - name: {{ VPN_GATEWAY }}
   type: compute.v1.targetVpnGateways
   properties:
-    network: {{ NETWORK }}
+    network: {{ properties["network"] }}
     region: {{ properties["region"] }}
 - name: {{ IP }}
   type: compute.v1.addresses
@@ -53,6 +52,6 @@ resources:
   properties:
     destRange: {{ properties["destRange"] }}
     nextHopVpnTunnel: $(ref.{{ VPN_TUNNEL }}.selfLink)
-    network: {{ NETWORK }}
+    network: {{ properties["network"] }}
     priority: {{ properties["priority"] }}
     tags: []
